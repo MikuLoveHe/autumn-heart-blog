@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mikulovehe.Dao.ContactDao">
+    <resultMap id="ContactResultMap" type="Contact">
+        <result property="contactId" column="contact_id"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="subject" column="subject"/>
+        <result property="content" column="content"/>
+        <result property="addTime" column="contact_add_time"/>
+    </resultMap>
+
+<!--    新增留言-->
+<insert id="addContact" parameterType="Contact" useGeneratedKeys="true" keyProperty="contactId">
+    insert into contact (username,email,subject,content,contact_add_time)
+    values (#{username},#{email},#{subject},#{content},#{addTime})
+</insert>
+
+</mapper>

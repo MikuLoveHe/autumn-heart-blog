@@ -1,0 +1,103 @@
+/*
+ Navicat Premium Dump SQL
+
+ Source Server         : localhost_3306
+ Source Server Type    : MySQL
+ Source Server Version : 90300 (9.3.0)
+ Source Host           : localhost:3306
+ Source Schema         : mikulovehe
+
+ Target Server Type    : MySQL
+ Target Server Version : 90300 (9.3.0)
+ File Encoding         : 65001
+
+ Date: 26/06/2025 20:06:33
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for article
+-- ----------------------------
+DROP TABLE IF EXISTS `article`;
+CREATE TABLE `article` (
+  `article_title` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '文章标题',
+  `article_id` int NOT NULL AUTO_INCREMENT COMMENT '文章id',
+  `article_add_time` datetime DEFAULT NULL COMMENT '文章添加时间',
+  `article_context` text COMMENT '文章内容',
+  `article_good_num` int DEFAULT '0' COMMENT '文章点赞数',
+  `article_look_num` int DEFAULT '0' COMMENT '文章观看数',
+  `article_img_url` varchar(255) DEFAULT NULL COMMENT '文章配图url',
+  `article_excerpt` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '文章摘录',
+  `article_author` varchar(30) DEFAULT NULL COMMENT '文章作者',
+  PRIMARY KEY (`article_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='文章';
+
+-- ----------------------------
+-- Table structure for article_tag
+-- ----------------------------
+DROP TABLE IF EXISTS `article_tag`;
+CREATE TABLE `article_tag` (
+  `article_tag_id` int NOT NULL AUTO_INCREMENT COMMENT '文章标签id',
+  `article_tag_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '文章标签名',
+  `article_tag_add_time` datetime DEFAULT NULL COMMENT '文章标签添加时间',
+  PRIMARY KEY (`article_tag_id`),
+  KEY `article_tag_id` (`article_tag_id`,`article_tag_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='文章标签';
+
+-- ----------------------------
+-- Table structure for article_tag_list
+-- ----------------------------
+DROP TABLE IF EXISTS `article_tag_list`;
+CREATE TABLE `article_tag_list` (
+  `article_id` int NOT NULL COMMENT '文章id',
+  `tag_id` int NOT NULL COMMENT '标签id',
+  PRIMARY KEY (`article_id`,`tag_id`),
+  KEY `fk_tag` (`tag_id`),
+  CONSTRAINT `fk_article` FOREIGN KEY (`article_id`) REFERENCES `article` (`article_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `fk_tag` FOREIGN KEY (`tag_id`) REFERENCES `article_tag` (`article_tag_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Table structure for comment
+-- ----------------------------
+DROP TABLE IF EXISTS `comment`;
+CREATE TABLE `comment` (
+  `comment_id` int NOT NULL AUTO_INCREMENT COMMENT '评论id',
+  `comment_context` text COMMENT '评论内容',
+  `article_id` int DEFAULT NULL COMMENT '文章id',
+  `user_id` int DEFAULT NULL COMMENT '评论人id',
+  `comment_good_num` int DEFAULT NULL COMMENT '评论点赞数',
+  `comment_time` datetime DEFAULT NULL COMMENT '评论时间',
+  PRIMARY KEY (`comment_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='评论';
+
+-- ----------------------------
+-- Table structure for contact
+-- ----------------------------
+DROP TABLE IF EXISTS `contact`;
+CREATE TABLE `contact` (
+  `contact_id` int NOT NULL AUTO_INCREMENT COMMENT '留言id',
+  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '留言用户名',
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '留言联系邮箱',
+  `subject` varchar(70) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '留言主题',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '留言内容',
+  `contact_add_time` datetime DEFAULT NULL COMMENT '留言时间',
+  PRIMARY KEY (`contact_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Table structure for user
+-- ----------------------------
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user` (
+  `user_id` int NOT NULL AUTO_INCREMENT COMMENT '用户id',
+  `user_name` varchar(35) DEFAULT NULL COMMENT '用户名',
+  `user_password` varchar(40) DEFAULT NULL COMMENT '用户密码',
+  `user_register_time` datetime DEFAULT NULL COMMENT '用户注册时间',
+  `user_role` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '用户角色',
+  PRIMARY KEY (`user_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户';
+
+SET FOREIGN_KEY_CHECKS = 1;

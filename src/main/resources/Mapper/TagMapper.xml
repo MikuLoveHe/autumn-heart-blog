@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mikulovehe.Dao.TagDao">
+    <resultMap id="TagResultMap" type="Tag">
+        <result property="id" column="article_tag_id"/>
+        <result property="addTime" column="article_tag_add_time"/>
+        <result property="name" column="article_tag_name"/>
+
+    </resultMap>
+
+    <insert id="insertTag" parameterType="Tag" useGeneratedKeys="true" keyProperty="id">
+        insert into article_tag (article_tag_name, article_tag_add_time)
+        values (#{name}, #{addTime})
+    </insert>
+
+    <update id="updateTag">
+        update article_tag
+        set article_tag_name= #{name}
+        where article_tag_id = #{id}
+    </update>
+
+    <delete id="deleteTag">
+        delete
+        from article_tag
+        where article_tag_id = #{id}
+    </delete>
+
+    <select id="selectTagById" resultMap="TagResultMap">
+        select *
+        from article_tag
+        where article_tag_id = #{id}
+    </select>
+
+    <select id="selectAllTags" resultMap="TagResultMap">
+        select *
+        from article_tag
+    </select>
+
+    <!--    查询所有的标签id和名字-->
+    <select id="selectAllTagName" resultMap="TagResultMap">
+        select article_tag_id, article_tag_name
+        from article_tag
+    </select>
+
+    <!--    查询所有被关联的标签-->
+    <select id="selectWithTagName" resultType="java.lang.String">
+        SELECT DISTINCT a_t.article_tag_name
+        FROM article_tag_list
+                 INNER JOIN article_tag AS a_t
+                            ON article_tag_list.tag_id = a_t.article_tag_id;
+    </select>
+
+    <!--    通过名字批量删除标签-->
+    <delete id="deleteTagsByName">
+        delete from article_tag
+        where article_tag_name in
+        <foreach collection="tagNames" item="tagName" open="(" separator="," close=")">
+            #{tagName}
+        </foreach>
+    </delete>
+
+
+
+</mapper>

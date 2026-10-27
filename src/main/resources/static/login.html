@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 秋心之云</title>
+    <link rel="icon" type="image/png" href="logo.jpg">
+    <script src="js/vue.min.js"></script>
+    <script src="js/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="/css/fonts.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #39b5cc;
+            --primary-light: #5ac5db;
+            --secondary: #E8A83A;
+            --light: #FAF4E9;
+            --dark: #1a1a2e;
+            --text: #333;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            --transition: all 0.3s ease;
+            --spacing-1: 8px;
+            --spacing-2: 16px;
+            --spacing-3: 24px;
+            --spacing-4: 32px;
+            --spacing-5: 40px;
+            --border-radius: 16px;
+        }
+
+        .dark-mode {
+            --primary: #4ec9e8;
+            --primary-light: #6bd5ed;
+            --secondary: #f5b85d;
+            --light: #1a1a2e; /* 更深的背景色 */
+            --text: #f0f0f0;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(26, 26, 46, 0.5); /* 更深的玻璃效果 */
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --card-bg: rgba(30, 30, 50, 0.7); /* 更深的卡片背景 */
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5); /* 更深的阴影 */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+            background: var(--light); /* 使用主题色作为基础背景 */
+        }
+
+        /* 增强波浪背景效果 */
+        .wave-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            opacity: 0.25; /* 增加不透明度 */
+            border-radius: 45%;
+            animation: wave 15s linear infinite;
+        }
+
+        .wave:nth-child(2) {
+            animation: wave 12s linear infinite;
+            opacity: 0.2; /* 增加不透明度 */
+            border-radius: 40%;
+        }
+
+        .wave:nth-child(3) {
+            animation: wave 18s linear infinite;
+            opacity: 0.15; /* 增加不透明度 */
+            border-radius: 50%;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateX(0) rotate(0deg);
+            }
+            50% {
+                transform: translateX(-25%) rotate(5deg);
+            }
+            100% {
+                transform: translateX(-50%) rotate(0deg);
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: var(--spacing-3);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 玻璃拟态效果 */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+        }
+
+        /* 头部样式 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--text);
+        }
+
+        .logo-text span:nth-child(1) {
+            color: var(--secondary);
+        }
+
+        .logo-text span:nth-child(2) {
+            color: var(--primary);
+        }
+
+        .logo-text span:nth-child(3) {
+            color: var(--light);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: var(--spacing-3);
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            padding: var(--spacing-1) var(--spacing-2);
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        nav ul li a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 登录容器 */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+            padding: var(--spacing-4) 0;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 500px;
+            padding: var(--spacing-5);
+            text-align: center;
+        }
+
+        .login-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-3);
+            color: var(--text);
+            position: relative;
+            display: inline-block;
+        }
+
+        .login-title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .login-subtitle {
+            font-size: 1.1rem;
+            color: var(--text);
+            opacity: 0.8;
+            margin-bottom: var(--spacing-4);
+            font-weight: 500;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            position: relative;
+            margin-bottom: var(--spacing-3);
+            text-align: left;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 18px 16px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(57, 181, 204, 0.2);
+        }
+
+        .form-label {
+            position: absolute;
+            top: 18px;
+            left: 16px;
+            color: var(--text);
+            opacity: 0.7;
+            pointer-events: none;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .form-control:focus + .form-label,
+        .form-control:not(:placeholder-shown) + .form-label {
+            top: 6px;
+            font-size: 0.8rem;
+            opacity: 0.9;
+            color: var(--primary);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text);
+            opacity: 0.6;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+            color: var(--primary);
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-3);
+            font-size: 0.95rem;
+        }
+
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: var(--transition);
+            display: block;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            margin-bottom: var(--spacing-3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #f0b347 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 168, 58, 0.25);
+        }
+
+        .btn-login:after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(30deg);
+            transition: all 0.6s ease;
+        }
+
+        .btn-login:hover:after {
+            transform: rotate(30deg) translate(20%, 20%);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: var(--spacing-3) 0;
+        }
+
+        .divider:before,
+        .divider:after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--glass-border);
+        }
+
+        .divider-text {
+            padding: 0 var(--spacing-2);
+            color: var(--text);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: var(--spacing-3);
+            font-size: 0.95rem;
+        }
+
+        .register-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: var(--spacing-4) var(--spacing-3);
+            margin-top: var(--spacing-4);
+            color: var(--text);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .login-card {
+                padding: var(--spacing-4);
+            }
+
+            .login-title {
+                font-size: 1.8rem;
+            }
+
+            .login-subtitle {
+                font-size: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                padding: var(--spacing-2);
+            }
+
+            nav ul {
+                margin-top: var(--spacing-2);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .remember-forgot {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .login-card {
+                padding: var(--spacing-3);
+            }
+        }
+
+        /* 新增加载状态样式 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 错误提示样式 */
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+<div id="app">
+    <div :class="['container', { 'dark-mode': darkMode }]">
+        <!-- 波浪背景 -->
+        <div class="wave-container">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+
+        <!-- 头部 -->
+        <header class="glass">
+            <div class="logo-container">
+                <div class="logo">
+                    <img src="logo.jpg" alt="秋心之云">
+                </div>
+                <div class="logo-text">
+                    <span>秋</span><span>心</span><span>之云</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="ripple">首页</a></li>
+                    <li><a href="#" class="ripple">文章管理</a></li>
+                </ul>
+            </nav>
+            <button class="theme-toggle ripple" @click="toggleDarkMode">
+                <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+            </button>
+        </header>
+
+        <!-- 登录主体 -->
+        <div class="login-container">
+            <div class="login-card glass">
+                <h1 class="login-title">欢迎来到</h1>
+                <p class="login-subtitle">请登录您的账户继续访问</p>
+
+                <form @submit.prevent="handleLogin">
+                    <div class="form-group">
+                        <input
+                                type="text"
+                                id="username"
+                                class="form-control"
+                                placeholder=" "
+                                v-model="loginForm.username"
+                                required
+                                :disabled="isLoading"
+                        >
+                        <label for="username" class="form-label">用户名</label>
+                    </div>
+
+                    <div class="form-group">
+                        <input
+                                :type="showPassword ? 'text' : 'password'"
+                                id="password"
+                                class="form-control"
+                                placeholder=" "
+                                v-model="loginForm.password"
+                                required
+                                :disabled="isLoading"
+                        >
+                        <label for="password" class="form-label">密码</label>
+                        <button
+                                type="button"
+                                class="password-toggle"
+                                @click="showPassword = !showPassword"
+                                :disabled="isLoading"
+                        >
+                            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                        </button>
+                    </div>
+
+                    <div v-if="errorMessage" class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+                    </div>
+
+                    <button
+                            type="submit"
+                            class="btn btn-login"
+                            :disabled="isLoading"
+                    >
+                        <span v-if="!isLoading">登录</span>
+                        <span v-else>
+                            <i class="fas fa-spinner fa-spin"></i> 登录中...
+                        </span>
+                    </button>
+
+                    <div class="divider">
+                        <div></div>
+                        <span class="divider-text">或</span>
+                        <div></div>
+                    </div>
+
+                    <p class="register-link">
+                        还没有账户? <a href="developing.html">立即注册</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <footer>
+            <p>© 2023 秋心之云 | 文章管理系统</p>
+        </footer>
+
+        <!-- 加载遮罩层 -->
+        <div class="loading-overlay" v-if="isLoading">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            darkMode: false,
+            showPassword: false,
+            isLoading: false,
+            errorMessage: '',
+            loginForm: {
+                username: '',
+                password: '',
+            }
+        },
+        methods: {
+            toggleDarkMode() {
+                this.darkMode = !this.darkMode;
+            },
+
+            handleLogin() {
+                // 验证表单
+                if (!this.loginForm.username || !this.loginForm.password) {
+                    this.errorMessage = '请输入用户名和密码';
+                    return;
+                }
+
+                this.isLoading = true;
+                this.errorMessage = '';
+
+                // 调用登录API
+                axios.post('/users/login', {
+                    username: this.loginForm.username,
+                    password: this.loginForm.password
+                })
+                    .then(response => {
+                        console.log(response.data);
+                        if (response.data.success) {
+
+                            const token = response.data.data
+
+                            // 保存Token到localStorage
+                            localStorage.setItem('authToken', token);
+
+                            // 跳转到管理页面
+                            window.location.href = 'ManageArticle.html'
+                        } else {
+                            this.errorMessage = response.data.message || '登录失败，请重试';
+                        }
+                    })
+                    .catch(error => {
+
+                        if (!error.response.data.success) {
+                            // 服务器返回的错误
+                            const status = error.response.data.code;
+                            if (status === 401) {
+                                this.errorMessage = '用户名或密码错误';
+                            } else if (status === 403) {
+                                this.errorMessage = '账号已被禁用';
+                            } else if (status >= 500) {
+                                this.errorMessage = '服务器错误，请稍后再试';
+                            } else {
+                                this.errorMessage = error.response.message || '登录失败';
+                            }
+                        } else if (error.request) {
+                            // 请求已发出但没有响应
+                            this.errorMessage = '网络错误，请检查您的连接';
+                        } else {
+                            // 其他错误
+                            this.errorMessage = '发生未知错误';
+                        }
+                    })
+                    .finally(() => {
+                        this.isLoading = false;
+                        this.loginForm = {
+                            username: '',
+                            password: '',
+                        }
+                    });
+            }
+        },
+        mounted() {
+
+            // 检查是否有token
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+        }
+    });
+</script>
+</body>
+</html>

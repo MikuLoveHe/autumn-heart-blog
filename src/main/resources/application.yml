@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    active: @activatedProperties@  # 动态激活环境（由Maven控制）
+# 所有环境共享的配置
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+mybatis:
+  mapper-locations: classpath*:Mapper/*.xml
+  type-aliases-package: com.mikulovehe.pojo,com.mikulovehe.DTO
+
+jwt:
+  # 生产环境必须通过环境变量注入高强度随机值
+  secret-key: ${JWT_SECRET:dev-only-secret-change-me}
+  expiration: 86400000

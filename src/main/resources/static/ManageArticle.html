@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章管理 - 秋心之云</title>
+    <link rel="icon" type="image/png" href="logo.jpg">
+    <script src="js/vue.min.js"></script>
+    <script src="js/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="/css/fonts.css" rel="stylesheet">
+    <style>
+        /* 沿用之前的全局样式，添加以下管理页面特有样式 */
+
+        :root {
+            --primary: #39b5cc;
+            --secondary: #E8A83A;
+            --light: #FAF4E9;
+            --dark: #1a1a2e;
+            --text: #333;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(255, 255, 255, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            --transition: all 0.5s ease;
+            --spacing-1: 8px;
+            --spacing-2: 16px;
+            --spacing-3: 24px;
+            --spacing-4: 32px;
+            --spacing-5: 40px;
+            --border-radius: 16px;
+        }
+
+        .dark-mode {
+            --primary: #4ec9e8;
+            --secondary: #f5b85d;
+            --light: #2d2d3a;
+            --text: #f0f0f0;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(26, 26, 46, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgb(103, 97, 129);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #39b5cc 0%, #E8A83A 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: var(--spacing-3);
+            transition: background 0.5s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 玻璃拟态效果 */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+        }
+
+        /* 头部样式 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--text);
+        }
+
+        .logo-text span:nth-child(1) {
+            color: var(--secondary);
+        }
+
+        .logo-text span:nth-child(2) {
+            color: var(--primary);
+        }
+
+
+        .logo-text span:nth-child(3) {
+            color: var(--light);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: var(--spacing-3);
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            padding: var(--spacing-1) var(--spacing-2);
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        nav ul li a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .management-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--spacing-4);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-2);
+            margin-bottom: var(--spacing-3);
+        }
+
+        .article-form {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-3);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-1);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: var(--spacing-2);
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        #content-editor {
+            min-height: 300px;
+            border: 1px solid var(--glass-border);
+            padding: var(--spacing-2);
+            border-radius: 8px;
+            background: var(--glass-bg);
+        }
+
+        .image-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-2);
+            margin-top: var(--spacing-2);
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: var(--border-radius);
+            margin-top: var(--spacing-2);
+            display: block; /* 确保图片显示 */
+        }
+
+        .btn {
+            padding: var(--spacing-2) var(--spacing-3);
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2d9db3;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #d6942b;
+        }
+
+        .article-list {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-3);
+        }
+
+        .article-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-2) 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .article-item:last-child {
+            border-bottom: none;
+        }
+
+        .article-item-info {
+            flex: 1;
+        }
+
+        .article-item-title {
+            font-weight: 600;
+            margin-bottom: var(--spacing-1);
+        }
+
+        .article-item-excerpt {
+            color: var(--text);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .article-item-actions {
+            display: flex;
+            gap: var(--spacing-2);
+        }
+
+        .article-item-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--spacing-2);
+            font-size: 0.9rem;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        .article-item-time {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .article-item-time i {
+            font-size: 0.8rem;
+        }
+
+        /* 富文本编辑器工具栏样式 */
+        .editor-toolbar {
+            display: flex;
+            gap: var(--spacing-1);
+            margin-bottom: var(--spacing-1);
+            flex-wrap: wrap;
+        }
+
+        .editor-toolbar button {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        .editor-toolbar button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tags-input {
+            margin-top: var(--spacing-2); /* 增加与上方元素的间距 */
+        }
+
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-1); /* 标签之间的水平/垂直间距 */
+            margin-top: var(--spacing-2); /* 标签与输入框的间距 */
+            align-items: center;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px; /* 标签间距 */
+            margin-bottom: var(--spacing-2);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+            margin-right: 0; /* 移除旧版margin */
+            margin-bottom: 0; /* 移除旧版margin */
+            /* 原有颜色样式保持不变 */
+        }
+
+        .tag-blue {
+            background: var(--primary); /* 使用主题色变量 */
+        }
+
+        .tag-orange {
+            background: var(--secondary); /* 使用主题色变量 */
+        }
+
+        .tag:nth-child(2) {
+            background: var(--secondary);
+        }
+
+        .tag i {
+            margin-left: 6px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .tag i:hover {
+            opacity: 1;
+        }
+
+        // 文章为空样式
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-4);
+            color: var(--text);
+            opacity: 0.7;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-2);
+            color: var(--secondary);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+
+        /* 分页样式 */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: var(--spacing-4);
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            gap: 6px;
+            padding: 8px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .page-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 8px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .page-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .page-item.active .page-link {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-item.disabled .page-link {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+            font-size: 0.9rem;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: var(--spacing-4) var(--spacing-3);
+            margin-top: var(--spacing-4);
+            color: var(--text);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: var(--spacing-3);
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 var(--spacing-1);
+            background: var(--card-bg);
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            transform: translateY(-5px);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: var(--spacing-2);
+            }
+
+            nav ul {
+                margin-top: var(--spacing-2);
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .more-articles-button {
+                padding: var(--spacing-2) var(--spacing-3);
+            }
+
+            .article-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .article-item-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+
+        /* 图片预览模态框样式 */
+        .image-preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: var(--spacing-4);
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-button {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .close-button:hover {
+            background: var(--secondary);
+        }
+
+        /* 增强预览图片的交互效果 */
+        .image-preview {
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+
+        .image-preview:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark-mode .image-preview-modal {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .dark-mode .modal-image {
+            box-shadow: 0 0 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .readonly-field {
+            background-color: #f5f5f5 !important;
+            cursor: not-allowed !important;
+            border: 1px dashed #ccc !important;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+    <div :class="['container', { 'dark-mode': darkMode }]">
+        <!-- 头部（与之前相同） -->
+        <header class="glass">
+            <div class="logo-container">
+                <div class="logo">
+                    <img src="logo.jpg" alt="秋心之云">
+                </div>
+                <div class="logo-text">
+                    <span>秋</span><span>心</span><span>之云</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="ripple">首页</a></li>
+                    <li><a href="ManageArticle.html" class="ripple active">文章管理</a></li>
+                </ul>
+            </nav>
+            <button class="theme-toggle ripple" @click="toggleDarkMode">
+                <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+            </button>
+        </header>
+
+        <main class="management-container">
+            <div class="action-buttons">
+                <button class="btn btn-primary ripple" @click="showForm = true; editingArticle = null;"
+                        v-if="!showForm">
+                    <i class="fas fa-plus"></i> 新增文章
+                </button>
+            </div>
+
+            <!-- 文章表单 -->
+            <div class="article-form glass" v-if="showForm">
+                <h2>{{ editingArticle ? '编辑文章' : '新增文章' }}</h2>
+
+                <!-- 替换原来的author输入框 -->
+                <div class="form-group" v-if="editingArticle">
+                    <label>作者</label>
+                    <div class="form-control" style="background: #f5f5f5; cursor: not-allowed;">
+                        {{ currentArticle.author }}
+                    </div>
+                </div>
+                <div class="form-group" v-else>
+                    <label for="author">作者（谨慎，不能修改）</label>
+                    <input type="text" id="author" class="form-control" v-model="currentArticle.author"
+                           placeholder="输入文章作者">
+                </div>
+
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <input type="text" id="title" class="form-control" v-model="currentArticle.title"
+                           placeholder="输入文章标题">
+                </div>
+
+                <div class="form-group">
+                    <label for="excerpt">摘录</label>
+                    <textarea id="excerpt" class="form-control" v-model="currentArticle.excerpt"
+                              placeholder="输入文章简短摘要"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>封面图片</label>
+                    <input type="file" id="image-upload" accept="image/*"
+                           @change="handleImageUpload" style="display: none;">
+                    <button class="btn btn-secondary ripple" @click="triggerFileInput">
+                        <i class="fas fa-image"></i> {{ currentArticle.image ? '更换图片' : '选择图片' }}
+                    </button>
+                    <div class="image-upload" v-if="currentArticle.image">
+                        <img :src="currentArticle.image" class="image-preview"
+                             @click="previewImage(currentArticle.image)"
+                             v-if="currentArticle.image">
+                        <button class="btn btn-danger ripple" @click="removeImage">
+                            <i class="fas fa-trash"></i> 移除图片
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>正文内容</label>
+                    <div class="editor-toolbar">
+                        <button @click="formatText('bold')"><i class="fas fa-bold"></i></button>
+                        <button @click="formatText('italic')"><i class="fas fa-italic"></i></button>
+                        <button @click="formatText('underline')"><i class="fas fa-underline"></i></button>
+                        <button @click="insertHeading(2)">H2</button>
+                        <button @click="insertHeading(3)">H3</button>
+                        <button @click="clearFormatting" title="清除格式">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                        <button @click="setParagraph" title="正文">
+                            P
+                        </button>
+
+                    </div>
+                    <div
+                            id="content-editor"
+                            contenteditable="true"
+                            @input="updateContent"
+                            @paste="handlePaste"
+                    ></div>
+                </div>
+
+                <div class="form-group">
+                    <label>标签</label>
+                    <div class="tags-input">
+                        <!--                       阻止默认回车换行         -->
+                        <!-- 增加空格键添加 -->
+                        <input type="text" class="form-control" v-model="tagInput"
+                               placeholder="输入标签，按回车添加" @keydown.enter.prevent="addTag"
+                               @keydown.space.prevent="addTag">
+                        <div class="tags-list">
+      <span
+              class="tag"
+              v-for="(tag, index) in currentArticle.tags"
+              :key="index"
+              :class="{
+          'tag-blue': index % 2 === 0,
+          'tag-orange': index % 2 === 1
+        }"
+      >
+        {{ tag }}
+        <i class="fas fa-times" @click="removeTag(index)"></i>
+      </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary ripple" @click="cancelEdit">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button class="btn btn-primary ripple" @click="saveArticle">
+                        <i class="fas fa-save"></i> {{ editingArticle ? '更新文章' : '保存文章' }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- 文章列表 -->
+            <div class="article-list glass" v-if="!showForm">
+                <h2>文章列表</h2>
+                <!-- 添加空状态提示 -->
+                <div class="empty-state" v-if="articles.length === 0">
+                    <i class="fas fa-newspaper"></i>
+                    <p>暂无文章，点击右上角"新增文章"开始创作吧！</p>
+                </div>
+                <div class="article-item" v-for="article in paginatedArticles" :key="article.id">
+                    <div class="article-item-info">
+                        <div class="article-item-title">{{ article.articleTitle }}</div>
+                        <div class="article-item-meta">
+                            <span class="article-item-excerpt">{{ article.articleExcerpt }}</span>
+                            <span class="article-item-time">
+                                <i class="far fa-clock"></i> {{ article.articleAddTime }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="article-item-actions">
+                        <button class="btn btn-secondary ripple" @click="editArticle(article)">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="btn btn-danger ripple" @click="deleteArticle(article.articleId)">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pagination-container" v-if="articles.length > 0">
+                    <ul class="pagination">
+                        <li class="page-item" :class="{ 'disabled': currentPage === 1 }">
+                            <button class="page-link" @click="goToPage(1)" :disabled="currentPage === 1">
+                                <i class="fas fa-angle-double-left"></i> 首页
+                            </button>
+                        </li>
+                        <li class="page-item" :class="{ 'disabled': currentPage === 1 }">
+                            <button class="page-link" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
+                                <i class="fas fa-angle-left"></i> 上一页
+                            </button>
+                        </li>
+
+                        <li class="page-item">
+                            <span class="page-info">第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+                        </li>
+
+                        <li class="page-item" :class="{ 'disabled': currentPage === totalPages }">
+                            <button class="page-link" @click="goToPage(currentPage + 1)"
+                                    :disabled="currentPage === totalPages">
+                                下一页 <i class="fas fa-angle-right"></i>
+                            </button>
+                        </li>
+                        <li class="page-item" :class="{ 'disabled': currentPage === totalPages }">
+                            <button class="page-link" @click="goToPage(totalPages)"
+                                    :disabled="currentPage === totalPages">
+                                尾页 <i class="fas fa-angle-double-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- 底部 -->
+        <footer class="glass">
+            <div class="social-links">
+                <a href="contact.html" class="ripple"><i class="fas fa-envelope-open"></i></a>
+            </div>
+            <p>© 2023 秋心之云 | 文章管理系统</p>
+        </footer>
+    </div>
+    <!-- 图片预览模态框 -->
+    <div class="image-preview-modal glass" v-if="showImageModal" @click.self="closeImageModal">
+        <div class="modal-content">
+            <button class="close-button ripple" @click="closeImageModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <img :src="currentPreviewImage" class="modal-image" @click.stop>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    // 在DOM加载完成后执行
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. 检查Token
+        const token = localStorage.getItem('authToken');
+        console.log('当前Token:', token);  // 调试用
+
+        if (!token) {
+            alert('请登录后再访问！');
+            window.location.href = 'login.html';
+            return; // 终止后续执行
+        }
+
+        // 2. 设置axios全局请求头
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+
+        new Vue({
+            el: '#app',
+
+            data: {
+                darkMode: false,
+                showForm: false,
+                editingArticle: null,
+                tagInput: '',
+                showImageModal: false,
+                currentPreviewImage: '',
+                currentArticle: {
+                    id: null,
+                    title: '',
+                    excerpt: '',
+                    content: '',
+                    image: null,
+                    tags: [],
+                    author: '',
+                },
+                articles: [],
+                currentPage: 1,       // 当前页码
+                pageSize: 10,         // 每页显示数量
+                totalArticles: 0      // 文章总数
+            },
+            computed: {
+                totalPages() {
+                    return Math.max(1, Math.ceil(this.totalArticles / this.pageSize));
+                },
+                paginatedArticles() {
+                    if (!this.articles || this.articles.length === 0) {
+                        return [];
+                    }
+                    const start = (this.currentPage - 1) * this.pageSize;
+                    const end = start + this.pageSize;
+                    return this.articles.slice(start, end);
+                }
+            },
+            methods: {
+                test() {
+                    alert("zhixing")
+                    console.log('浏览器里的：' + localStorage.getItem('authToken'));
+                },
+                // 加载文章
+
+                fetchArticles() {
+                    // 先把所有文章查询到后放在本地
+                    axios.get('/admins/article/all', {
+                        params: {
+                            start: this.currentPage,
+                            num: this.pageSize
+                        }
+                    })
+                        .then(resp => {
+
+                            this.articles = resp.data.data || [];
+                            this.totalArticles = resp.data.total || 0;
+                            console.log('文章数据加载成功', resp.data);
+
+                            // 如果当前页没有数据且不是第一页，则返回上一页
+                            if (this.articles.length === 0 && this.currentPage > 1) {
+                                this.currentPage -= 1;
+                                this.fetchArticles();
+                            }
+
+                        })
+                        .catch(error => {
+                            this.articles = [];
+                            this.totalArticles = 0;
+                                if (error.response.status === 401) {
+                                    const { message, redirect } = error.response.data;
+
+                                    alert(`登录信息错误: ${message}`);
+                                    setTimeout(() => {
+                                        window.location.href = redirect;
+                                    }, 1500);
+                                }
+                            return Promise.reject(error);
+
+
+                        });
+                },
+                // 分页导航
+                goToPage(page) {
+                    if (page < 1 || page > this.totalPages) return;
+                    this.currentPage = page;
+                    this.fetchArticles();
+                },
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                },
+                // 触发文件选择对话框
+                triggerFileInput() {
+                    document.getElementById('image-upload').click();
+                },
+                // 处理图片上传
+                handleImageUpload(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    // 检查文件类型
+                    if (!file.type.match('image.*')) {
+                        alert('请选择图片文件 (JPEG, PNG等)');
+                        return;
+                    }
+
+                    // 检查文件大小 (例如限制5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('图片大小不能超过5MB');
+                        return;
+                    }
+
+                    // 创建预览
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.currentArticle.image = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                },
+                // 移除图片
+                removeImage() {
+                    this.currentArticle.image = null;
+                    console.log(this.currentArticle.image)
+                    // 重置文件输入，允许重复选择同一文件
+                    document.getElementById('image-upload').value = '';
+                },
+                updateContent() {
+                    this.currentArticle.content = document.getElementById('content-editor').innerHTML;
+                },
+                handlePaste(e) {
+                    e.preventDefault();
+                    const text = (e.clipboardData || window.clipboardData).getData('text');
+                    document.execCommand('insertText', false, text);
+                },
+                formatText(command) {
+                    document.execCommand(command, false, null);
+                    this.updateContent();
+                },
+                insertHeading(level) {
+                    document.execCommand('formatBlock', false, `h${level}`);
+                    this.updateContent();
+                },
+                clearFormatting() {
+                    document.execCommand('removeFormat', false, null);
+                    this.updateContent();
+                },
+                setParagraph() {
+                    document.execCommand('formatBlock', false, '<p>');
+                    this.updateContent();
+                },
+                addTag() {
+                    const tag = this.tagInput.trim();
+                    if (tag && !this.currentArticle.tags.includes(tag)) {
+                        this.currentArticle.tags.push(tag);
+                        this.tagInput = '';
+
+                        // 添加后自动聚焦输入框
+                        this.$nextTick(() => {
+                            this.$el.querySelector('.tags-input input').focus();
+                        });
+                    }
+                },
+                removeTag(index) {
+                    this.currentArticle.tags.splice(index, 1);
+                },
+                editArticle(article) {
+                    console.log("当前文章id：" + article.articleId)
+                    this.currentArticle = {
+                        id: article.articleId,
+                        title: article.articleTitle,
+                        excerpt: article.articleExcerpt,
+                        content: article.articleContext,
+                        image: article.articleImgUrl,
+                        tags: [...article.tagsName],
+                        author: article.author || '默认作者' // 从接口获取作者信息
+                    };
+                    this.showForm = true;
+                    this.editingArticle = article;
+
+                    console.log("编辑框里的内容：", this.editingArticle)
+
+                    // 确保DOM更新后设置编辑器内容
+                    this.$nextTick(() => {
+                        document.getElementById('content-editor').innerHTML = this.currentArticle.content;
+                    });
+                },
+                // 保存文章时处理图片上传
+                async saveArticle() {
+                    if (!this.currentArticle.content || !this.currentArticle.excerpt || !this.currentArticle.title) {
+                        alert("保存文章失败，不能有空内容")
+                        return;
+                    }
+
+                    console.log("将要保存的文章内容", this.currentArticle)
+
+                    const formData = new FormData();
+                    try {
+                        // 1. 如果有新图片上传（Base64格式）
+                        if (this.currentArticle.image && this.currentArticle.image.startsWith('data:')) {
+                            const fileInput = document.getElementById('image-upload');
+
+
+                            formData.append('image', fileInput.files[0]);
+                            // 如果是编辑模式，传递旧图URL用于删除
+
+                            if (this.editingArticle?.articleImgUrl) {
+                                console.log('删除旧照片1')
+
+                                formData.append('oldImageUrl', this.editingArticle.articleImgUrl);
+                            }
+
+                            // 上传新图片
+                            const uploadResponse = await axios.post('/admins/upload', formData, {
+                                headers: {'Content-Type': 'multipart/form-data'}
+                            });
+
+                            // 更新为服务器返回的新URL
+                            this.currentArticle.image = uploadResponse.data;
+                        } else if (!this.currentArticle.image) {
+                            // 如果编辑模式没有照片就删除前面的照片
+                            if (this.editingArticle?.articleImgUrl) {
+                                console.log('删除旧照片2')
+                                console.log(this.editingArticle.articleImgUrl)
+
+                                axios.post('/admins/upload/delete', {
+                                    oldImageUrl: this.editingArticle.articleImgUrl
+                                })
+
+                            }
+                            // 如果添加模式没有照片就不管
+                        }
+
+
+                        // 2. 构造文章数据对象
+                        const articleData = {
+                            articleId: this.currentArticle.id,
+                            articleTitle: this.currentArticle.title,
+                            articleExcerpt: this.currentArticle.excerpt,
+                            articleContext: this.currentArticle.content,
+                            articleImgUrl: this.currentArticle.image, // 已经是URL或null
+                            tagsName: this.currentArticle.tags,
+                            author: this.currentArticle.author
+                        };
+
+                        // 3. 发送文章数据到后端
+                        let response;
+                        // 保存标记
+                        let saveFlag = false
+                        // 返回的数据
+                        let result = null
+                        if (this.editingArticle) {
+                            // 更新
+                            /*
+                            * 点击更新文章时，需要获得这篇文章里的标签
+                            *
+                            * */
+                            response = await axios.put('/admins/article', articleData).then(
+                                resp => {
+                                    result = resp.data
+                                    if (result.success) {
+                                        saveFlag = true
+                                    }
+
+                                })
+                        } else {
+                            // 添加
+                            response = await axios.post('/admins/article', articleData).then(
+                                resp => {
+                                    result = resp.data
+                                    if (result.success) {
+                                        saveFlag = true
+                                    }
+
+                                }
+                            )
+                        }
+                        if (saveFlag) {
+                            alert('保存成功！');
+                            this.resetForm();
+                            this.showForm = false;
+                            this.fetchArticles();
+                        } else {
+                            alert(result.code + ' : ' + result.message)
+                        }
+
+                    } catch (error) {
+                        console.error('操作失败:', error);
+                        alert(`保存失败: ${error.response?.data?.message || error.message}`);
+                    }
+                },
+
+
+                deleteArticle(id) {
+                    if (confirm('确定要删除这篇文章吗？')) {
+                        // 这里应该替换为实际的API调用
+                        axios.delete("/admins/article/" + id).then(
+                            resp => {
+                                console.log(resp.data);
+                                this.fetchArticles(); // 重新加载文章列表
+                            }
+                        ).catch(
+                            error => {
+                                console.error('删除失败', error)
+                            }
+                        )
+                    }
+                },
+                cancelEdit() {
+                    this.resetForm();
+                    this.showForm = false;
+                },
+                resetForm() {
+                    this.currentArticle = {
+                        id: null,
+                        title: '',
+                        excerpt: '',
+                        content: '',
+                        image: null,
+                        tags: [],
+                        author: '',
+                    };
+                    this.tagInput = '';
+                    this.editingArticle = null;
+
+                    if (document.getElementById('content-editor')) {
+                        document.getElementById('content-editor').innerHTML = '';
+                    }
+                },
+                // 预览图片
+                previewImage(imageUrl) {
+                    this.currentPreviewImage = imageUrl;
+                    this.showImageModal = true;
+                    // 禁止背景滚动
+                    document.body.style.overflow = 'hidden';
+                },
+
+                // 关闭预览
+                closeImageModal() {
+                    this.showImageModal = false;
+                    // 恢复背景滚动
+                    document.body.style.overflow = '';
+                }
+
+            },
+            mounted() {
+                // 模拟从API加载文章列表
+                this.fetchArticles()
+            }
+
+        });
+    });
+</script>
+</body>
+</html>
+
+
+<!--
+密码登陆页面
+
+-->

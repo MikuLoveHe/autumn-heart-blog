@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mikulovehe.Dao.ArticleDao">
+    <resultMap id="ArticleResultMap" type="Article">
+        <result property="id" column="article_id"/>
+        <result property="addTime" column="article_add_time"/>
+        <result property="title" column="article_title"/>
+        <result property="context" column="article_context"/>
+        <result property="goodNum" column="article_good_num"/>
+        <result property="lookNum" column="article_look_num"/>
+        <result property="imgUrl" column="article_img_url"/>
+        <result property="excerpt" column="article_excerpt"/>
+        <result property="author" column="article_author"/>
+    </resultMap>
+
+    <insert id="insertArticle" parameterType="Article" useGeneratedKeys="true" keyProperty="id">
+        insert into article (article_title, article_add_time, article_context, article_img_url, article_excerpt,article_author)
+        values (#{title}, #{addTime}, #{context}, #{imgUrl}, #{excerpt},#{author})
+    </insert>
+
+    <update id="updateArticle">
+        update article
+        set article_title= #{title},
+            article_context= #{context},
+            article_img_url = #{imgUrl},
+            article_excerpt=#{excerpt}
+
+        where article_id = #{id}
+    </update>
+
+    <delete id="deleteArticleById">
+        delete
+        from article
+        where article_id = #{id}
+    </delete>
+
+    <select id="selectArticleById" resultMap="ArticleResultMap">
+        select *
+        from article
+        where article_id = #{id}
+    </select>
+
+
+    <select id="selectAllArticles" resultMap="ArticleResultMap">
+        select *
+        from article
+    </select>
+
+    <select id="selectHomePageArticle" resultMap="ArticleResultMap">
+        select *
+        from article limit #{start},#{num}
+    </select>
+
+    <select id="getArticleId">
+        select article_id
+        from article
+    </select>
+
+    <!--    取消点赞-->
+    <update id="cancelGood">
+        update article
+        set article_good_num=article_good_num - 1
+        where article_id = #{id}
+    </update>
+
+    <!--    点赞-->
+    <update id="good">
+        update article
+        set article_good_num=article_good_num + 1
+        where article_id = #{id}
+    </update>
+
+    <!--    根据文章id获得点赞数-->
+    <select id="getGoodNum">
+        select article_good_num
+        from article
+        where article_id = #{id}
+    </select>
+
+    <!--    查询文章图片地址，删除用-->
+    <select id="getImageUrlById">
+        select article_img_url
+        from article
+        where article_id = #{id}
+    </select>
+
+    <!--    统计所有的文章数-->
+    <select id="countAllArticles">
+        select count(article_id)
+        from article
+    </select>
+
+    <!--    获得全部文章的点赞数集合-->
+    <select id="selectAllArticleGoodNums" resultType="java.lang.Integer">
+        SELECT IFNULL(article_good_num, 0)
+        FROM article
+    </select>
+
+    <update id="addLookNum">
+        update article
+        set article_look_num=article_look_num + 1
+        where article_id = #{id}
+    </update>
+
+</mapper>

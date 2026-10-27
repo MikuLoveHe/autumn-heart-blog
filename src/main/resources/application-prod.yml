@@ -1,0 +1,23 @@
+# 生产环境配置（阿里云）
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    type: com.alibaba.druid.pool.DruidDataSource
+  # 禁用开发工具（重要！）
+  devtools:
+    restart:
+      enabled: false
+
+server:
+  port: 8080  # 生产环境建议用80或443（需配合Nginx）
+  address: 0.0.0.0
+
+upload:
+  dir: ${UPLOAD_DIR:/var/lib/autumnheart/uploads}  # 生产环境上传目录
+

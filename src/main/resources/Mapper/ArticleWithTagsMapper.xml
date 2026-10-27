@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mikulovehe.Dao.ArticleWithTagsDao">
+    <resultMap id="ArticleWithTagsResultMap" type="ArticleWithTagsDTO">
+        <result property="articleId" column="article_id"/>
+        <result property="articleAddTime" column="article_add_time"/>
+        <result property="articleTitle" column="article_title"/>
+        <result property="articleContext" column="article_context"/>
+        <result property="articleGoodNum" column="article_good_num"/>
+        <result property="articleLookNum" column="article_look_num"/>
+        <result property="articleImgUrl" column="article_img_url"/>
+        <result property="articleExcerpt" column="article_excerpt"/>
+        <result property="author" column="article_author"/>
+        <collection property="tagsName" ofType="string">
+            <result column="article_tag_name"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectArticleWithTags" resultMap="ArticleWithTagsResultMap">
+        SELECT a.*,
+               a_t.article_tag_name
+        from article as a
+                 LEFT JOIN article_tag_list on a.article_id = article_tag_list.article_id
+                 left JOIN article_tag as a_t on a_t.article_tag_id = article_tag_list.tag_id;
+    </select>
+
+    <!--    根据文章id查找文章和对应的标签-->
+    <select id="selectArticleWithTagsByArticleId" resultMap="ArticleWithTagsResultMap">
+        SELECT a.*,
+               a_t.article_tag_name
+        from article as a
+                 LEFT JOIN article_tag_list on a.article_id = article_tag_list.article_id
+                 left JOIN article_tag as a_t on a_t.article_tag_id = article_tag_list.tag_id
+        where a.article_id = #{articleId}
+    </select>
+
+    <!--    分页查询文章和标签-->
+    <select id="selectArticleWithTagsByPage" resultMap="ArticleWithTagsResultMap">
+        SELECT a.*,
+               a_t.article_tag_name
+        from (select * from article limit #{start},#{num}) as a
+                 LEFT JOIN article_tag_list on a.article_id = article_tag_list.article_id
+                 left JOIN article_tag as a_t on a_t.article_tag_id = article_tag_list.tag_id
+    </select>
+
+    <insert id="connectArticleAndTags">
+        insert into article_tag_list (article_id, tag_id)
+        VALUES (#{articleId}, #{tagId})
+    </insert>
+
+    <!--    根据id删除一篇文章所有的标签-->
+    <delete id="deleteArticleAllWithTagsById">
+        delete
+        from article_tag_list
+        WHERE article_id = #{articleId};
+    </delete>
+
+    <!--    通过文章id查询文章所对应的所有标签名称-->
+    <select id="selectArticleTagById" resultType="java.lang.String">
+        SELECT a_t.article_tag_name
+        from article_tag as a_t
+                 join article_tag_list as list on a_t.article_tag_id = list.tag_id
+        where article_id = #{articleId};
+    </select>
+
+    <!-- 查询未被任何文章使用的标签名称 -->
+    <select id="selectUnusedTags" resultType="java.lang.String">
+        SELECT t.article_tag_name
+        FROM article_tag t
+        WHERE t.article_tag_name IN
+        <foreach collection="tagNameList" item="tagName" open="(" separator="," close=")">
+            #{tagName}
+        </foreach>
+        AND NOT EXISTS (
+        SELECT 1
+        FROM article_tag_list atl
+        WHERE atl.tag_id = t.article_tag_id
+        )
+    </select>
+
+
+    <!-- 1. 先分页查询文章ID -->
+    <select id="searchArticleIdsCondition" resultType="int">
+        SELECT DISTINCT a.article_id
+        FROM article a
+        LEFT JOIN article_tag_list at ON a.article_id = at.article_id
+        LEFT JOIN article_tag t ON at.tag_id = t.article_tag_id
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (a.article_title LIKE CONCAT('%',#{keyword},'%')
+            OR t.article_tag_name LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        LIMIT #{page}, #{pageSize}
+    </select>
+
+    <!-- 2. 根据ID列表查询完整数据 -->
+    <select id="selectArticlesWithTagsByIds" resultMap="ArticleWithTagsResultMap">
+        SELECT a.*, t.article_tag_name
+        FROM article a
+        LEFT JOIN article_tag_list at ON a.article_id = at.article_id
+        LEFT JOIN article_tag t ON at.tag_id = t.article_tag_id
+        WHERE a.article_id IN
+        <foreach item="id" collection="articleIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!-- 查询符合条件的文章数量 -->
+    <select id="countArticlesCondition" resultType="int">
+        SELECT COUNT(DISTINCT a.article_id)
+        FROM article a
+        LEFT JOIN article_tag_list at ON a.article_id = at.article_id
+        LEFT JOIN article_tag t ON at.tag_id = t.article_tag_id
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (a.article_title LIKE CONCAT('%',#{keyword},'%')
+            OR t.article_tag_name LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+
+</mapper>

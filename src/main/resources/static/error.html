@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>错误提示</title>
+    <link rel="icon" type="image/png" href="logo.jpg">
+    <script>
+        if (window.location.pathname === '/ManageArticle.html') {
+            alert('请先登录！');
+            window.location.href = '/login.html';
+        }
+    </script>
+</head>
+<body>
+<h1>请<a href="/login.html">登录</a>后访问</h1>
+</body>
+</html>

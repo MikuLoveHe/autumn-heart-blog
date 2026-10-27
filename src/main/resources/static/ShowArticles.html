@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章列表 - 秋心之云</title>
+    <link rel="icon" type="image/png" href="logo.jpg">
+    <script src="js/vue.min.js"></script>
+    <script src="js/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="/css/fonts.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #39b5cc;
+            --secondary: #E8A83A;
+            --light: #FAF4E9;
+            --dark: #1a1a2e;
+            --text: #333;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(255, 255, 255, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            --transition: all 0.5s ease;
+            --spacing-1: 8px;
+            --spacing-2: 16px;
+            --spacing-3: 24px;
+            --spacing-4: 32px;
+            --spacing-5: 40px;
+            --border-radius: 16px;
+        }
+
+        .dark-mode {
+            --primary: #4ec9e8;
+            --secondary: #f5b85d;
+            --light: #2d2d3a;
+            --text: #f0f0f0;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(26, 26, 46, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(26, 26, 46, 0.5);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #39b5cc 0%, #E8A83A 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: var(--spacing-3);
+            transition: background 0.5s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 玻璃拟态效果 */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+        }
+
+        /* 头部样式 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .back-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .back-button:hover {
+            background: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--text);
+        }
+
+        .logo-text span:nth-child(1) {
+            color: var(--secondary);
+        }
+
+        .logo-text span:nth-child(2) {
+            color: var(--primary);
+        }
+
+        .logo-text span:nth-child(3) {
+            color: var(--light);
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: var(--spacing-2) var(--spacing-4);
+            border-radius: 50px;
+            border: none;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text);
+            font-size: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .search-button:hover {
+            background: var(--secondary);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 主要内容区 */
+        .content-header {
+            text-align: center;
+            padding: var(--spacing-4) var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .content-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-2);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 博客卡片 */
+        .posts-grid {
+            display: grid;
+            /* 修改为等宽卡片，每行两个 */
+            grid-template-columns: repeat(auto-fill, minmax(48%, 1fr)); /* 48% 确保两列布局 */
+            gap: var(--spacing-3);
+            margin-bottom: var(--spacing-5);
+            min-height: 300px;
+        }
+
+        .empty-state-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 50vh;
+        }
+
+        .post-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            perspective: 1000px;
+            position: relative;
+
+        }
+
+        .post-image {
+            /* 增加图片高度 */
+            height: 280px; /* 原为200px */
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .post-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .post-card:hover .post-image img {
+            transform: scale(1.05);
+        }
+
+        .post-card:hover {
+            transform: translateY(-8px); /* 增强悬停效果 */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .post-content {
+            /* 增加内边距 */
+            padding: var(--spacing-4); /* 原为spacing-3 */
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: var(--spacing-2);
+        }
+
+        .tag {
+            /* 增大标签大小 */
+            font-size: 0.9rem; /* 原为0.8rem */
+            padding: 6px 14px; /* 原为4px 12px */
+            border-radius: 20px;
+            color: white;
+        }
+
+        .tag-blue {
+            background: var(--primary);
+        }
+
+        .tag-orange {
+            background: var(--secondary);
+        }
+
+        .post-title {
+            /* 增大标题字体 */
+            font-size: 1.8rem; /* 原为1.5rem */
+            margin-bottom: var(--spacing-2);
+            font-weight: 700;
+        }
+
+        .post-excerpt {
+            color: var(--text);
+            margin-bottom: var(--spacing-3);
+            line-height: 1.6;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-2);
+        }
+
+        .post-meta-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .post-author i {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .post-date {
+            font-size: 0.8rem;
+            color: var(--text);
+            opacity: 0.7;
+        }
+
+        .post-actions {
+            display: flex;
+        }
+
+        .post-actions button {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            margin-left: var(--spacing-2);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .post-actions button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .post-actions button i {
+            margin-right: 4px;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-2);
+            padding: var(--spacing-3);
+            margin-top: var(--spacing-4);
+        }
+
+        .pagination button {
+            padding: var(--spacing-1) var(--spacing-2);
+            border: none;
+            border-radius: 4px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .pagination button:disabled {
+            background: var(--glass-bg);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .pagination span {
+            color: var(--text);
+            margin: 0 var(--spacing-1);
+        }
+
+        /* 空状态样式 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 100%;
+            padding: var(--spacing-5);
+            margin: var(--spacing-4) 0;
+        }
+
+        .empty-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-5);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transform: translateY(0);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--secondary);
+            margin-bottom: var(--spacing-3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .empty-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-2);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .empty-message {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: var(--spacing-3);
+            line-height: 1.6;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: var(--spacing-4) var(--spacing-3);
+            margin-top: var(--spacing-4);
+            color: var(--text);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: var(--spacing-3);
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 var(--spacing-1);
+            background: var(--card-bg);
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            transform: translateY(-5px);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: var(--spacing-2);
+                gap: var(--spacing-2);
+            }
+
+            .top-nav {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-container {
+                width: 100%;
+                margin-top: var(--spacing-2);
+            }
+
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .post-actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div :class="['container', { 'dark-mode': darkMode }]">
+        <header class="glass">
+            <div class="top-nav">
+                <button class="back-button ripple" @click="goBack">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="logo-text">
+                    <span>秋</span><span>心</span><span>之云</span>
+                </div>
+            </div>
+
+            <div class="search-container">
+                <input
+                        type="text"
+                        placeholder="搜索文章..."
+                        v-model="searchQuery"
+                        @keyup.enter="performSearch"
+                >
+                <button class="search-button ripple" @click="performSearch">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+            </div>
+
+            <button class="theme-toggle ripple" @click="toggleDarkMode">
+                <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+            </button>
+        </header>
+
+        <main>
+            <section class="content-header glass">
+                <h1>{{ pageTitle }}</h1>
+                <p v-if="totalResults > 0">共找到 {{ totalResults }} 篇文章</p>
+            </section>
+
+            <!-- 无结果提示 -->
+            <div class="empty-state-container" v-if="posts.length === 0">
+                <div class="empty-state">
+                    <div class="empty-card glass">
+                        <div class="empty-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h2 class="empty-title">暂无文章</h2>
+                        <p class="empty-message">
+                            {{ emptyMessage }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文章列表 -->
+            <section class="posts-grid" v-else>
+                <div
+                        class="post-card glass"
+                        v-for="post in posts"
+                        :key="post.articleId"
+                        @click="goToArticleDetail(post.articleId)"
+                >
+                    <div class="post-card-inner">
+                        <div class="post-image"
+                             v-if="post.articleImgUrl && post.articleImgUrl !== 'null'">
+                            <img :src="post.articleImgUrl" :alt="post.articleTitle">
+                        </div>
+                        <div class="post-content">
+                            <div class="post-tags">
+                                <div
+                                        class="tag"
+                                        v-for="(tag, index) in post.tagsName"
+                                        :key="index"
+                                        :class="{'tag-blue': index % 2 === 0, 'tag-orange': index % 2 === 1}"
+                                >
+                                    {{ tag }}
+                                </div>
+                            </div>
+                            <h3 class="post-title">{{ post.articleTitle }}</h3>
+                            <p class="post-excerpt">{{ post.articleExcerpt }}</p>
+                            <div class="post-meta">
+                                <div class="post-meta-left">
+                                    <div class="post-author" v-if="post.author">
+                                        <i class="fas fa-user"></i> {{ post.author }}
+                                    </div>
+                                    <div class="post-date">{{ formatDate(post.articleAddTime) }}</div>
+                                </div>
+                                <div class="post-actions">
+                                    <button class="ripple">
+                                        <i class="fas fa-heart"></i> {{ post.articleGoodNum }}
+                                    </button>
+                                    <button class="ripple">
+                                        <i class="fas fa-eye"></i> {{ post.articleLookNum }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 分页控件 -->
+            <div class="pagination glass" v-if="posts.length > 0">
+                <button
+                        @click="changePage(1)"
+                        :disabled="currentPage === 1"
+                >
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button
+                        @click="changePage(currentPage - 1)"
+                        :disabled="currentPage === 1"
+                >
+                    <i class="fas fa-chevron-left"></i> 上一页
+                </button>
+
+                <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+
+                <button
+                        @click="changePage(currentPage + 1)"
+                        :disabled="currentPage === totalPages"
+                >
+                    下一页 <i class="fas fa-chevron-right"></i>
+                </button>
+                <button
+                        @click="changePage(totalPages)"
+                        :disabled="currentPage === totalPages"
+                >
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+        </main>
+
+        <footer class="glass">
+            <div class="social-links">
+                <a href="contact.html" class="ripple"><i class="fas fa-envelope-open"></i></a>
+            </div>
+            <p>© 2025 秋心之云 | 记录生活，分享感悟</p>
+        </footer>
+    </div>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            darkMode: false,
+            searchQuery: '',
+            posts: [],
+            totalResults: 0,
+            currentPage: 1,
+            pageSize: 10,
+            pageType: 'all', // 'all' 或 'search'
+            pageTitle: '所有文章',
+            emptyMessage: '这里空空如也，去别处看看吧'
+        },
+        computed: {
+            totalPages() {
+                return Math.ceil(this.totalResults / this.pageSize);
+            }
+        },
+        methods: {
+            // 初始化页面
+            initPage() {
+                console.log('初始化页面');
+                const urlParams = new URLSearchParams(window.location.search);
+                const type = urlParams.get('type') || 'all';
+                console.log(type)
+                const query = urlParams.get('q') || '';
+                console.log(query)
+                const page = parseInt(urlParams.get('page')) || 1;
+                console.log(page)
+
+                this.pageType = type;
+                this.searchQuery = query;
+                this.currentPage = page;
+
+                if (this.pageType === 'search') {
+                    this.pageTitle = `搜索: "${this.searchQuery}"`;
+                    this.emptyMessage = `没有找到与"${this.searchQuery}"相关的文章`;
+                } else {
+                    this.pageTitle = '所有文章';
+                    this.emptyMessage = '这里空空如也，去别处看看吧';
+                }
+
+                this.fetchArticles();
+            },
+
+            // 获取文章数据
+            async fetchArticles() {
+                let apiUrl = '';
+                let params = {
+                    page: this.currentPage,
+                    pageSize: this.pageSize
+                };
+
+                if (this.pageType === 'search') {
+                    apiUrl = '/articles/search';
+                    params.keyword = this.searchQuery;
+                } else {
+                    apiUrl = '/articles/allForPage';
+                }
+
+                await axios.get(apiUrl, {params})
+                    .then(response => {
+                        this.posts = response.data.data;
+                        console.log(this.posts)
+                        this.totalResults = response.data.total;
+                        console.log(this.totalResults)
+                    })
+                    .catch(error => {
+                        console.error('加载文章失败:', error);
+                        this.posts = [];
+                    });
+            },
+
+            // 切换页面
+            changePage(page) {
+                this.currentPage = page;
+                this.fetchArticles();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+
+                // 更新URL参数
+                const params = new URLSearchParams();
+                params.set('type', this.pageType);
+                if (this.pageType === 'search') params.set('q', this.searchQuery);
+                params.set('page', this.currentPage);
+
+                window.history.pushState({}, '', `?${params.toString()}`);
+            },
+
+            // 执行搜索
+            performSearch() {
+                if (!this.searchQuery.trim()) {
+
+                    return;
+                }
+
+                this.pageType = 'search';
+                this.currentPage = 1;
+                this.pageTitle = `搜索: "${this.searchQuery}"`;
+                this.emptyMessage = `没有找到与"${this.searchQuery}"相关的文章`;
+
+                this.fetchArticles();
+
+                // 更新URL参数
+                const params = new URLSearchParams();
+                params.set('type', 'search');
+                params.set('q', this.searchQuery);
+                params.set('page', 1);
+
+                window.history.pushState({}, '', `?${params.toString()}`);
+            },
+
+            // 返回首页
+            goBack() {
+                window.location.href = 'index.html'
+            },
+
+            // 切换深色模式
+            toggleDarkMode() {
+                this.darkMode = !this.darkMode;
+            },
+
+            // 跳转到文章详情
+            goToArticleDetail(articleId) {
+                window.location.href = `/article.html?id=${articleId}`;
+            },
+
+            // 格式化日期
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+            }
+        },
+        mounted() {
+            this.initPage();
+
+            // 监听浏览器前进/后退事件
+            window.addEventListener('popstate', () => {
+                this.initPage();
+            });
+        }
+    });
+</script>
+</body>
+</html>

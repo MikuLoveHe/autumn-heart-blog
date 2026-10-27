@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>功能开发中 - 秋心之云</title>
+    <link rel="icon" type="image/png" href="logo.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #39b5cc;
+            --secondary: #E8A83A;
+            --light: #FAF4E9;
+            --dark: #1a1a2e;
+            --text: #333;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(255, 255, 255, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            --transition: all 0.5s ease;
+            --spacing-1: 8px;
+            --spacing-2: 16px;
+            --spacing-3: 24px;
+            --spacing-4: 32px;
+            --spacing-5: 40px;
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #39b5cc 0%, #E8A83A 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--spacing-3);
+        }
+
+        .coming-soon-container {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .coming-soon-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-5);
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            top: var(--spacing-3);
+            left: var(--spacing-3);
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .back-button:hover {
+            background: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        .icon {
+            font-size: 5rem;
+            color: var(--secondary);
+            margin-bottom: var(--spacing-3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-2);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: var(--spacing-4);
+            color: var(--text);
+        }
+
+        .suggestion-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: var(--spacing-3);
+        }
+
+        .suggestion-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: var(--spacing-2) var(--spacing-4);
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-1);
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .suggestion-button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* 暗色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #4ec9e8;
+                --secondary: #f5b85d;
+                --text: #f0f0f0;
+                --glass-bg: rgba(26, 26, 46, 0.4);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --card-bg: rgba(26, 26, 46, 0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="coming-soon-container">
+    <div class="coming-soon-card">
+        <button class="back-button" onclick="window.history.back()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+
+        <div class="icon">
+            <i class="fas fa-tools"></i>
+        </div>
+
+        <h1 class="title">功能开发中</h1>
+
+        <p class="message">
+            我们正在努力开发这个功能，很快就能与您见面！
+            <br>
+            请稍后再来查看，感谢您的耐心等待。
+        </p>
+
+        <p class="suggestion-text">
+            如果您对这个功能有任何建议或想法，
+            <br>
+            欢迎告诉我们，帮助我们做得更好！
+        </p>
+
+        <a href="contact.html" class="suggestion-button">
+            <i class="fas fa-lightbulb"></i> 提供建议
+        </a>
+    </div>
+</div>
+</body>
+</html>

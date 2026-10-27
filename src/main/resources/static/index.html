@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>秋心之云 | 文章阅读</title>
+    <link rel="icon" type="image/png" href="logo.jpg">
+    <script src="js/vue.min.js"></script>
+    <script src="js/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="/css/fonts.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #39b5cc;
+            --secondary: #E8A83A;
+            --light: #FAF4E9;
+            --dark: #1a1a2e;
+            --text: #333;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(255, 255, 255, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            --transition: all 0.5s ease;
+            --spacing-1: 8px;
+            --spacing-2: 16px;
+            --spacing-3: 24px;
+            --spacing-4: 32px;
+            --spacing-5: 40px;
+            --border-radius: 16px;
+        }
+
+        .dark-mode {
+            --primary: #4ec9e8;
+            --secondary: #f5b85d;
+            --light: #2d2d3a;
+            --text: #f0f0f0;
+            --text-light: #f0f0f0;
+            --glass-bg: rgba(26, 26, 46, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(26, 26, 46, 0.5);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #39b5cc 0%, #E8A83A 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: var(--spacing-3);
+            transition: background 0.5s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 玻璃拟态效果 */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+        }
+
+        /* 头部样式 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--text);
+        }
+
+        .logo-text span:nth-child(1) {
+            color: var(--secondary);
+        }
+
+        .logo-text span:nth-child(2) {
+            color: var(--primary);
+        }
+
+
+        .logo-text span:nth-child(3) {
+            color: var(--light);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: var(--spacing-3);
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            padding: var(--spacing-1) var(--spacing-2);
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        nav ul li a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 修改搜索按钮样式 */
+        .search-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .search-button:hover {
+            background: var(--secondary);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        /* 暗色模式适配 */
+        .dark-mode .search-button {
+            background: var(--primary);
+            color: var(--text-light);
+        }
+
+        //没有文章时
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 100%;
+            padding: var(--spacing-5);
+            margin: var(--spacing-4) 0;
+        }
+
+        .empty-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-5);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transform: translateY(0);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .empty-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.25);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--secondary);
+            margin-bottom: var(--spacing-3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .empty-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-2);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .empty-message {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: var(--spacing-3);
+            line-height: 1.6;
+        }
+
+        .empty-cta {
+            padding: var(--spacing-2) var(--spacing-4);
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-1);
+            transition: var(--transition);
+            text-decoration: none;
+            margin-top: var(--spacing-2);
+        }
+
+        .empty-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* 主要内容区 */
+        .hero {
+            text-align: center;
+            padding: var(--spacing-5) var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-2);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto var(--spacing-3);
+            color: var(--text);
+        }
+
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto var(--spacing-4);
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: var(--spacing-2) var(--spacing-4);
+            border-radius: 50px;
+            border: none;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text);
+            font-size: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .search-container button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        /* 博客卡片 */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--spacing-3);
+            margin-bottom: var(--spacing-5);
+            min-height: 300px; /* 确保有最小高度 */
+        }
+
+        .empty-state-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 50vh;
+        }
+
+        .post-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            perspective: 1000px;
+            position: relative;
+        }
+
+        .post-card:hover {
+            transform: translateY(-8px); /* 增强悬停效果 */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .post-image {
+            height: 200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .post-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .post-card:hover .post-image img {
+            transform: scale(1.05);
+        }
+
+        .post-content {
+            padding: var(--spacing-3);
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px; /* 标签间距 */
+            margin-bottom: var(--spacing-2);
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .tag-blue {
+            background: var(--primary); /* 使用主题色变量 */
+        }
+
+        .tag-orange {
+            background: var(--secondary); /* 使用主题色变量 */
+        }
+
+        .tag:nth-child(2) {
+            background: var(--secondary);
+        }
+
+        .post-title {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-2);
+            font-weight: 700;
+        }
+
+        .post-excerpt {
+            color: var(--text);
+            margin-bottom: var(--spacing-3);
+            line-height: 1.6;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text);
+            font-size: 0.9rem;
+            width: 100%; /* 确保占满宽度 */
+        }
+
+        .post-actions {
+            display: flex;
+        }
+
+        .post-actions button {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            margin-left: var(--spacing-2);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .post-actions button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .post-actions button i {
+            margin-right: 4px;
+        }
+
+        .post-author-date {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .post-author i {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .post-date {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+
+        .more-articles-container {
+            display: flex;
+            justify-content: center;
+            margin-top: var(--spacing-4);
+            margin-bottom: var(--spacing-5);
+        }
+
+        .more-articles-button {
+            padding: var(--spacing-2) var(--spacing-4);
+            border: none;
+            border-radius: 50px;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-1);
+            transition: var(--transition);
+        }
+
+        .more-articles-button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .more-articles-button i {
+            transition: transform 0.3s ease;
+        }
+
+        .more-articles-button:hover i {
+            transform: translateX(4px);
+        }
+
+        /* 按钮涟漪效果 */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .ripple:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform .5s, opacity 1s;
+        }
+
+        .ripple:active:after {
+            transform: scale(0, 0);
+            opacity: .3;
+            transition: 0s;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: var(--spacing-4) var(--spacing-3);
+            margin-top: var(--spacing-4);
+            color: var(--text);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: var(--spacing-3);
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 var(--spacing-1);
+            background: var(--card-bg);
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            transform: translateY(-5px);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: var(--spacing-2);
+            }
+
+            nav ul {
+                margin-top: var(--spacing-2);
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .more-articles-button {
+                padding: var(--spacing-2) var(--spacing-3);
+            }
+
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .post-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+
+</head>
+<body>
+<div id="app">
+    <div :class="['container', { 'dark-mode': darkMode }]">
+        <header class="glass">
+            <div class="logo-container">
+                <div class="logo">
+                    <img src="logo.jpg" alt="秋心之云">
+                </div>
+                <div class="logo-text">
+                    <span>秋</span><span>心</span><span>之云</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="ripple">首页</a></li>
+                    <li><a href="ShowArticles.html" class="ripple">归档</a></li>
+                    <li><a href="developing.html" class="ripple">关于</a></li>
+                    <li><a href="contact.html" class="ripple">联系</a></li>
+                </ul>
+            </nav>
+            <button class="theme-toggle ripple" @click="toggleDarkMode">
+                <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+            </button>
+        </header>
+
+        <main>
+            <section class="hero glass">
+                <h1>秋心之云</h1>
+                <p>记录生活中的点滴，分享旅途中的风景。</p>
+                <p>文字是心灵的栖息地，影像是时光的备忘录。</p>
+                <!-- 搜索容器部分 -->
+                <div class="search-container">
+                    <input
+                            type="text"
+                            placeholder="搜索文章（标题或标签）..."
+                            v-model="searchQuery"
+                            @keyup.enter="performSearch"
+                    >
+                    <button class="search-button ripple" @click="performSearch">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </div>
+            </section>
+
+            <!--            暂无文章-->
+            <div class="empty-state-container" v-if="posts.length === 0">
+                <div class="empty-state">
+                    <div class="empty-card glass">
+                        <div class="empty-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h2 class="empty-title">暂无文章</h2>
+                        <p class="empty-message">
+                            这里空空如也，去别处看看吧<br>
+                            或者稍后再来，也许会有新内容
+                        </p>
+                        <a href="developing.html" class="empty-cta ripple">
+                            <i class="fas fa-compass"></i> 探索其他内容
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <section class="posts-grid">
+
+                <div class="post-card glass" v-for="post in posts" :key="post.articleId"
+                     @click="goToArticleDetail(post.articleId)">
+                    <div class="post-card-inner">
+                        <div class="post-image"
+                             v-if="post.articleImgUrl!=='' && post.articleImgUrl!=='null'&&post.articleImgUrl">
+                            <img :src="post.articleImgUrl" :alt="post.articleTitle">
+                        </div>
+                        <div class="post-content">
+                            <div class="post-tags">
+                                <div class="tag" v-for="(tag, index) in post.tagsName"
+                                     :key="index" :class="{'tag-blue': index % 2 === 0,'tag-orange': index % 2 === 1}">
+                                    {{ tag }}
+                                </div>
+                            </div>
+                            <h3 class="post-title">{{ post.articleTitle }}</h3>
+                            <p class="post-excerpt">{{ post.articleExcerpt }}</p>
+                            <div class="post-meta">
+                                <div class="post-author-date">
+                                    <div class="post-author" v-if="post.author">
+                                        <i class="fas fa-user"></i> {{ post.author }}
+                                    </div>
+                                    <div class="post-date">{{ post.articleAddTime }}</div>
+                                </div>
+                                <div class="post-actions">
+                                    <button class="ripple">
+                                        <i class="fas fa-heart"></i> {{ post.articleGoodNum }}
+                                    </button>
+                                    <button class="ripple">
+                                        <i class="fas fa-eye"></i> {{ post.articleLookNum }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="more-articles-container" v-if="totalPosts>6">
+                <button
+                        class="more-articles-button glass ripple"
+                        @click="goToMoreArticles">
+                    更多文章
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </main>
+
+        <footer class="glass">
+            <div class="social-links">
+                <!--                <a href="#" class="ripple"><i class="fab fa-weixin"></i></a>-->
+
+                <a href="contact.html" class="ripple"><i class="fas fa-envelope-open"></i></a>
+            </div>
+            <p>© 2025 秋心之云 | 记录生活，分享感悟</p>
+            <p>已发布 {{ totalPosts }} 篇文章 | 收获 {{ totalLikes }} 次点赞</p>
+        </footer>
+    </div>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            items: [],
+            darkMode: false,
+            posts: [],
+            tag: [],
+            totalLikes: 0,
+            totalPosts: 0,
+            showEmptyMessage: null,
+            searchQuery: '', // 新增搜索关键词
+            isSearching: false, // 搜索状态标志
+        },
+        methods: {
+            async loadHomePage() {
+                await axios.get('/articles?start=1&num=6').then(
+                    resp => {
+                        this.posts = resp.data
+                        console.log(resp.data)
+                        // 判断文章数量是否为零
+                        if (this.posts.length === 0) {
+                            this.showEmptyMessage = true; // 添加一个状态变量控制提示显示
+                        } else {
+                            this.showEmptyMessage = false;
+                        }
+                    }
+                ).catch(error => {
+                    console.error('加载文章失败:', error);
+                    this.showEmptyMessage = true; // 请求失败也显示提示
+                })
+            },
+            // 点击跳转到文章
+            goToArticleDetail(articleId) {
+                window.location.href = "/article.html?id=" + articleId;
+
+            },
+
+            toggleDarkMode() {
+                this.darkMode = !this.darkMode;
+            },
+            likePost(postId) {
+                const post = this.posts.find(p => p.id === postId);
+                if (post) {
+                    post.likes++;
+                    this.calculateTotalLikes();
+                }
+            },
+            calculateTotalLikes() {
+                axios.get('/articles/totalArticleAndLikes').then(
+                    resp => {
+                        console.log(resp.data)
+                        this.totalLikes = resp.data.totalGoodNum
+                        this.totalPosts = resp.data.allArticle
+                    }
+                )
+            },
+            goToMoreArticles() {
+                window.location.href = '/ShowArticles.html?type=all'
+            },
+            performSearch() {
+                if (this.searchQuery.trim()) {
+                    this.isSearching = true;
+
+                    // 跳转到搜索结果页
+                    window.location.href = `/ShowArticles.html?q=${encodeURIComponent(this.searchQuery)}&type=search`;
+                }
+
+            }
+
+        },
+        mounted() {
+            this.calculateTotalLikes();
+            this.loadHomePage();
+        }
+    });
+</script>
+</body>
+</html>
